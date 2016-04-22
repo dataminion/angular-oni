@@ -1,0 +1,76 @@
+<html lang="en" ng-app="oniApp">
+
+<head>
+    <title>Security Analytics</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="./assets/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="./assets/css/bootstrap.css" rel="stylesheet" type="text/css">
+    <link href="./assets/css/style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body class="app-reciever" ng-controller="appCtrl">
+    <style>
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+</style>
+    <div nav-bar></div>
+    <div class="section">
+            <div class="row">
+                <div class="col-md-6">
+                 
+                    <div suspicious-connects-panel></div>
+                    
+                </div>
+                <div class="col-md-6">
+                    <div class="panel panel-default" style="min-height: 42%; max-height: 42%;" id="chartbody">
+                        <!-- Default panel contents -->
+                        <div class="panel-heading">Network View</div>
+                        <div class="panel-body" >
+                            <force-map  id="chart1" force-map-graph="forceGraph"></force-map>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    <div class="section">
+            <div class="row">
+                <div class="col-md-6">
+                    <div playbook-panel></div>
+                    
+                </div>
+                <div class="col-md-6">
+                    <div class="panel panel-default" style="min-height: 42%; max-height: 42%;">
+                        <!-- Default panel contents -->
+                        <div class="panel-heading">Detail View</div>
+                        <div class="panel-body">
+                            <div chord-map id="chart2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    </div>
+    <footer class="section section-primary">
+        <script src="./assets/js/model/external/d3/d3.min.js" type="text/javascript"></script>
+        <script src="./assets/js/model/external/angular/angular.min.js" type="text/javascript"></script>
+        <script src="./assets/js/model/external/angular-bootstrap/ui-bootstrap.min.js" type="text/javascript"></script>
+        <script src="./assets/js/config.js" type="text/javascript"></script>
+        <script src="./assets/js/app.js" type="text/javascript"></script>
+        <script src="./assets/js/service/data.js" type="text/javascript"></script>
+        
+        <script src="./assets/js/directive/force.js" type="text/javascript"></script>
+        <script src="./assets/js/directive/chord.js" type="text/javascript"></script>
+        <script src="./assets/js/directive/nav.js" type="text/javascript"></script>
+    </footer>
+</body>
+</html>
