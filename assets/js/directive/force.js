@@ -1,74 +1,101 @@
 oniApp
-.directive('forceMap', function () {
+.directive('forceMap', function (forceGraph) {
     return {
         restrict: 'E',
         scope:{forceMapGraph: '='},
         link: function(scope) {
-            scope.instance = []
-            scope.conf = false;
-            scope.graph = {
-                color : d3.scale.category10(),
-                svg : null,
-                force : d3.layout.force(),
-                link : null,
-                node : null
-            }
+            scope.instance = [];
+            scope.g = new forceGraph();
             //$watchers are looking for changes to the datamodel
             scope.$watch('forceMapGraph', function(d) {scope.instance = d;});
-            scope.$watch('instance.attr', function(d) {if(d!=null){return scope.confGraph(d);}});
-            scope.$watch('instance.data', function(d) {if(d!=null){if(scope.conf == true){scope.setupGraph(d);}}});
-
-            scope.confGraph = function(attr) {
-                scope.graph.force.charge(attr.charge)
-                    .linkDistance(attr.linkDistance)
-                    .gravity(attr.gravity)
-                    .size(attr.size);
-                scope.graph.svg = d3.select(attr.displayDiv)
-                    .append("svg")
-                    .attr("width", attr.svgWidth)
-                    .attr("height", attr.svgHeight);
-                scope.conf = true;
+            scope.$watch('instance.attr', function(d) {if(d!=null){scope.g.confGraph(d);}});
+            scope.$watch('instance.data', function(d) {if(d!=null){if(scope.g.conf == true){scope.g.setupGraph(d);}}});
             }
-            
-            scope.setupGraph = function(data) {    
-                scope.graph.force.nodes(data.nodes)
+        }
+    }
+).factory('forceGraph', function(){
+    var forceGraph = function(){this.initialize = {
+        color : d3.scale.category10(),
+        svg : null,
+        force : d3.layout.force(),
+        tooltip : null,
+        link : null,
+        node : null,
+        conf : false,
+        setup : false,
+        attr : [],
+        confGraph : function(attr) {
+                this.attr = attr;
+                this.force.charge(this.attr.charge)
+                    .linkDistance(this.attr.linkDistance)
+                    .gravity(this.attr.gravity)
+                    .size(this.attr.size);
+                this.svg = d3.select(this.attr.displayDiv)
+                    .append("svg")
+                    .attr("width", this.attr.svgWidth)
+                    .attr("height", this.attr.svgHeight);
+                this.tooltip = d3.select(this.attr.displayDiv)
+                    .append("div")
+                    .classed('node-label', true);
+                this.conf = true;
+            },
+        setupGraph : function(data) {  
+    
+                var attr = this.attr;
+                this.force.nodes(data.nodes)
                       .links(data.links)
-                      .on("tick", tick)
+                    .on("tick", function (){
+                        link
+                            .attr("x1", function(d) { return d.source.x; })
+                            .attr("y1", function(d) { return d.source.y; })
+                            .attr("x2", function(d) { return d.target.x; })
+                            .attr("y2", function(d) { return d.target.y; });
+                        node
+                            .attr("cx", function(d) { return d.x; })
+                            .attr("cy", function(d) { return d.y; });
+                        })
                       .start();
                 
-                scope.graph.tooltip = d3.select("body")
-                            .append("div")
-                            .classed('node-label', true);
-                
-                scope.graph.node = scope.graph.svg
-                    .selectAll(".node")
+                var link = this.svg.append("g").attr("class", "link").selectAll(".link")
+                    .data(data.links)
+                    .enter().append("line")
+                    .style("stroke-width", function (d) {
+                        return attr.edgeStroke ;
+                    });
+                var node = this.svg.append("g").attr("class", "node").selectAll(".node")
                     .data(data.nodes)
                     .enter().append("circle")
-                    .attr("class", "node")
                     .attr("r", 10)
                     .attr("id", function (d) { return d.Id; })
                     .style("fill", function (d) {
-                        if (d[scope.instance.attr.nodeFill]) {
+                        if (d[attr.nodeFill]) {
                             return "#0071C5";
                         } else {
                             return "#fdb813";
                         }
                     })
-                    .call(scope.graph.force.drag)
+                    .call(this.force.drag)
+                
+                    
+                
+                this.setupNodeActions(node);
+            
+                
+                  
+                
+    },
+        setupNodeActions : function(node) {
+            var tooltip = this.tooltip;
+            var attr = this.attr;   
+            node
                     .on('mouseover', function (d) {
-                       scope.graph.tooltip.html(d.ip + '<br/> <span class="x-small text-muted">Right click to apply IP filter</span>')
+                console.log(d);
+                       tooltip.html(d.Title + '<br/> <span class="x-small text-muted">Right click to apply IP filter</span>')
+                              .style("left", "30px")
+                              .style("top", "60px")
                               .style('visibility', 'visible');
                     })
-//                   .on('mousemove', function () {
-//                       if (($('body').width() - d3.event.pageX) < 130) {
-//                           tooltip.style('top', (d3.event.pageY - 10) + 'px')
-//                                  .style('left', (d3.event.pageX - 140) + 'px');
-//                       }
-//                       else {
-//                           tooltip.style('top', (d3.event.pageY - 10) + 'px')
-//                                  .style('left', (d3.event.pageX + 10) + 'px');
-//                       }
-//                   })
+
 //                   .on("click", nodeclick)
 //                   .on("contextmenu", function (d, i) {
 //                       d3.event.preventDefault();                               
@@ -77,49 +104,26 @@ oniApp
 //                       ipFilter.value = d.ip;
 //                       btnApplyFilter.click();         
 //                   })
-//                   .on('mouseout', function () { tooltip.style('visibility', 'hidden'); });;     
-                
-                scope.graph.link = scope.graph.svg
-                    .selectAll(".link")
-                    .data(data.links)
-                    .enter().append("line")
-                    .attr("class", "link")
-                    .style("stroke-width", function (d) {
-                        return scope.instance.attr.edgeStroke ;
-                    });
-
-                  function tick() {
-                    scope.graph.link
-                        .attr("x1", function(d) { return d.source.x; })
-                        .attr("y1", function(d) { return d.source.y; })
-                        .attr("x2", function(d) { return d.target.x; })
-                        .attr("y2", function(d) { return d.target.y; });
-
-                    scope.graph.node
-                        .attr("cx", function(d) { return d.x; })
-                        .attr("cy", function(d) { return d.y; });
-                      };
-            }
-
-        }
+                   .on('mouseout', function () { tooltip.style('visibility', 'hidden'); });;     
+            },
+            setupEdgeActions : function() {
+                this.edge   
+            },
+        actionGraph : Action,
     }
-}).factory('forceGraph', function(){
-    var scope;
-    var forceGraph = {
-        init: function(dirScope){
-            scope = dirScope;
-        },
-        confGraph : function(attr) {
-                scope.graph.force.charge(attr.charge)
-                    .linkDistance(attr.linkDistance)
-                    .gravity(attr.gravity)
-                    .size(attr.size);
-                scope.graph.svg = d3.select(attr.displayDiv)
-                    .append("svg")
-                    .attr("width", attr.svgWidth)
-                    .attr("height", attr.svgHeight);
-                scope.conf = true;
-            }
-    }; 
+
+    // Call the initialize function for every new instance
+    return this.initialize;
+    };
+    var Action  = {
+        nodeClick: null,
+        edgeClick: null,
+        nodeHover: null,
+        edgeHover: null,
+        highlightEdge: null,
+        mouseOut: null,
+        showFullGraphWithSelectedEdge: null
+    }
+     
     return forceGraph;              
 });
