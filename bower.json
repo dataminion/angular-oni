@@ -1,0 +1,37 @@
+{
+  "name": "oni-oa",
+  "authors": [
+    "Dataminion <me@dataminion.io>"
+  ],
+  "description": "Operational Analytics for ONI",
+  "main": "index.html",
+  "moduleType": [],
+  "keywords": [
+    "angular",
+    "bootstrap",
+    "intel"
+  ],
+  "license": "apache 2.0",
+  "homepage": "getoni.com",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-http-auth": "~1.2.2",
+    "angular": "~1.4.3",
+    "angular-loading-bar": "~0.8.0",
+    "angularjs-toaster": "~0.4.15",
+    "angular-bootstrap": "~0.14.0",
+    "angular-route": "~1.4.3",
+    "angular-resource": "~1.4.3",
+    "angular-sanitize": "~1.4.3",
+    "angular-base64": "https://github.com/batoure/angular-base64.git#1.0.0",
+    "angular-cookies": "~1.4.3",
+    "d3": "~3.4.3"
+  }
+}
