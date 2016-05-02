@@ -4,9 +4,7 @@ oniApp.run(function($rootScope, dataService, pageService) {
     $rootScope.forceFire = false;
     // Set copyright year for footer
     $rootScope.copyrightYear = new Date().getFullYear()
-}).controller('appCtrl', function ($rootScope, $scope, $log) {
-    
-    
+}).controller('appCtrl', function ($rootScope, $scope, $log) { 
     $scope.$on('event:d3-force-isolateNode', function(event, value) {
                 $scope.forceFire = true;
                 $scope.$digest();

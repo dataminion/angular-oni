@@ -114,8 +114,7 @@ oniApp.service('dataService', function($http, $q) {
                     self._display_events = self._events
                     self.graph.set();
                 }else{
-                    self.host = nodeFilter
-                    self.events.filters(nodeFilter).then(function(events){
+                    self.host = nodeFilter self.events.filters(nodeFilter).then(function(events){
                         self._display_events = events.value;
                         self.hosts.filters(events.conn).then(function(hosts){
                             self._display_hosts = hosts;

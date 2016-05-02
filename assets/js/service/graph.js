@@ -56,9 +56,9 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                     .attr("r", 10)
                     .attr("id", function (d) { return d.Id; })
                     .style("fill", function (d) {
-                        if (d[self._attr.nodeFill]) {
+                        if (d[self._attr.nodeFill]==1) {
                             return "#0071C5";
-                        } else {
+                        } else if(d[self._attr.nodeFill]==0) {
                             return "#fdb813";
                         }
                     })
@@ -81,26 +81,63 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                     })
                     .on('mouseout', function () { self._tooltip.style('visibility', 'hidden'); })  
                     //.on("click", nodeclick)
-                   .on("contextmenu", function (d, i) {
-                        //var position = d3.mouse(this);
-                        //d3.select('#my_custom_menu')
-                          //.style('position', 'absolute')
-                          //.style('left', position[0] + "px")
-                          //.style('top', position[1] + "px")
-                          //.style('display', 'block');
-                       self.data.graph.set_display(d)
-                       $rootScope.df = self.data;
-                        $rootScope.$broadcast("event:d3-force-isolateNode", d);
-                        self._tooltip.html('This Worked')
-                              .style("left", (d.x+20)+"px")
-                              .style("top", (d.y)+"px")
-                              .style('visibility', 'visible'); 
-                
-                       d3.event.preventDefault();
-                   });
+                   .on("contextmenu", self.contextMenu(
+                        [
+                            {
+                                title: 'isolate focus',
+                                action:function (elm, d, i) {
+                                    self.data.graph.set_display(d)
+                                    $rootScope.df = self.data;
+                                    $rootScope.$broadcast("event:d3-force-isolateNode", d);
+                                }
+                            },
+                            {
+                                title: 'add to ticket',
+                                action:function (elm, d, i) {
+                                    self.data.ticket.add_data(d)
+                                    $rootScope.df = self.data;
+                                    $rootScope.$broadcast("event:d3-force-addToTicket", d);
+                                }
+                            }
+                        ]));
                 }
             }
         };
+        this.contextMenu = function (menu, openCallback) {
+            // create the div element that will hold the context menu
+            d3.selectAll('.d3-context-menu').data([1])
+                .enter()
+                .append('div')
+                .attr('class', 'd3-context-menu');
+            // close menu
+            d3.select('body').on('click.d3-context-menu', function() {
+                d3.select('.d3-context-menu').style('display', 'none');
+            });
+            // this gets executed when a contextmenu event occurs
+            return function(data, index) {	
+                var elm = this;
+                d3.selectAll('.d3-context-menu').html('');
+                var list = d3.selectAll('.d3-context-menu').append('ul');
+                list.selectAll('li').data(menu).enter()
+                    .append('li')
+                    .html(function(d) {
+                        return d.title;
+                    })
+                    .on('click', function(d, i) {
+                        d.action(elm, data, index);
+                        d3.select('.d3-context-menu').style('display', 'none');
+                    });
+                // the openCallback allows an action to fire before the menu is displayed
+                // an example usage would be closing a tooltip
+                if (openCallback) openCallback(data, index);
+                // display context menu
+                d3.select('.d3-context-menu')
+                    .style('left', (d3.event.pageX - 2) + 'px')
+                    .style('top', (d3.event.pageY - 2) + 'px')
+                    .style('display', 'block');
+		        d3.event.preventDefault();
+	       };
+       };
         this.init = function(){};
         return this.init();
     }
