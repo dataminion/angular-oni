@@ -9,30 +9,8 @@
     <link href="./assets/css/style.css" rel="stylesheet" type="text/css">
 </head>
 
-<body class="app-reciever" ng-controller="appCtrl">
-    <style>
+<body data-ng-controller="appCtrl">
 
-.node {
-  stroke: #fff;
-  stroke-width: 1.5px;
-}
-.node-label {
-            position: absolute;
-            z-index: 10;
-            visibility: hidden;
-            background: white;
-            border-style: solid;
-            border-color: black;
-            border-radius: 10px;
-            font-family: verdana, san-serif;
-            padding: 10px;
-        }
-.link {
-  stroke: #999;
-  stroke-opacity: .6;
-}
-
-</style>
     <div nav-bar></div>
     <div class="section">
             <div class="row">
@@ -44,9 +22,13 @@
                 <div class="col-md-6">
                     <div class="panel panel-default" style="min-height: 42%; max-height: 42%;" id="chartbody">
                         <!-- Default panel contents -->
-                        <div class="panel-heading">Network View</div>
+                        <div class="panel-heading" > Network View <ng ng-if="df.host.Title">:</ng> {{ df.host.Title }} <ng class="fa fa-reply" ng-click="delete()" ng-if="df.host.Title"></ng></div>
                         <div class="panel-body" >
-                            <force-map  id="chart1" force-map-graph="forceGraph"></force-map>
+                            <force-map  id="chart1" 
+                                       force-map-conf="ps.forceConf"
+                                       force-map-data="df" 
+                                       force-map-fire="forceFire"
+                            ></force-map>
                         </div>
                     </div>
                 </div>
@@ -77,6 +59,8 @@
         <script src="./assets/js/config.js" type="text/javascript"></script>
         <script src="./assets/js/app.js" type="text/javascript"></script>
         <script src="./assets/js/service/data.js" type="text/javascript"></script>
+        <script src="./assets/js/service/page.js" type="text/javascript"></script>
+        <script src="./assets/js/service/graph.js" type="text/javascript"></script>
         
         <script src="./assets/js/directive/force.js" type="text/javascript"></script>
         <script src="./assets/js/directive/chord.js" type="text/javascript"></script>

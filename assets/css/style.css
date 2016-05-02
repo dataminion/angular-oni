@@ -1,19 +1,24 @@
+.navbar, .section {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
 #circle circle {
-fill: none;
-pointer-events: all;
+    fill: none;
+    pointer-events: all;
 }
- 
+
 .group path {
-fill-opacity: .5;
+    fill-opacity: .5;
 }
- 
+
 path.chord {
-stroke: #000;
-stroke-width: .25px;
+    stroke: #000;
+    stroke-width: .25px;
 }
- 
+
 #circle:hover path.fade {
-display: none;
+    display: none;
 }
 
 .node {
@@ -26,3 +31,47 @@ display: none;
     stroke: #777;
     stroke-width: 2px;
 }
+
+.padding0 {
+    padding: 0;
+}
+
+.link {
+    stroke: #999;
+    stroke-width: 3px;
+    transition: stroke .5s linear;
+}
+
+.link-highlight {
+    stroke-width: 3px;
+}
+
+.link-faded {
+    stroke-opacity: 0.2 !important;
+}
+
+.node {
+    stroke: #fff;
+    stroke-width: 1.5px;
+}
+
+.node-label {
+    position: absolute;
+    z-index: 10;
+    visibility: hidden;
+    background: white;
+    border-style: solid;
+    border-color: black;
+    border-radius: 10px;
+    font-family: verdana, san-serif;
+    padding: 10px;
+}
+
+.node-faded {
+    fill-opacity: 0.2 !important;
+    stroke-opacity: 0.2 !important;
+}
+#sconnects-data{
+    overflow:hidden;
+}
+

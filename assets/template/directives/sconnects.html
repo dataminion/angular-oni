@@ -1,9 +1,11 @@
-<div class="panel panel-default" style="min-height: 42%; max-height: 42%;">
+<div class="panel panel-default" style="min-height: 42%; max-height: 42%;" id="sconnects-data">
     <!-- Default panel contents -->
     <div class="panel-heading">Suspicious Connects</div>
      <div class="panel-body">
     <p>Suspicious connections are listed below in ranked order. Mouse over a connection to highlight it in the connection graph on the right. Click the connection to generate all the log details in the detail view. (Internal IP Addresses)</p>
   </div>
+    <div class="panel-body" >
+        <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
                 <tr>
@@ -16,55 +18,33 @@
                     <th>Dfirst</th>
                     <th>Stotal</th>
                     <th>Dtotal</th>
+                    <th>Spkts</th>
+                    <th>Ddpkts</th>
                 </tr>
                 </thead>
-                <tbody>
-                <tr>
-                    <td>3/24/2016 0:31</td>
-                    <td>172.30.0.46</td>
-                    <td>10.0.0.183</td>
-                    <td>52234</td>
-                    <td>119</td>
-                    <td>58</td>
-                    <td>12</td>
-                    <td>213454</td>
-                    <td>100</td>
+                <tbody ng-style="'max-height: 200px; overflow-y:scroll'">
+                <tr ng-repeat="event in df.events.get()">
+
+                    <td>{{ event.values.date }}</td>
+                    <td>{{ event.values.sTitle }}</td>
+                    <td>{{ event.values.Title }}</td>
+                    <td>{{ event.values.sport }}</td>
+                    <td>{{ event.values.dport }}</td>
+                    <td>{{ event.values.sfirst }}</td>
+                    <td>{{ event.values.dfirst }}</td>
+                    <td>{{ event.values.stotal }}</td>
+                    <td>{{ event.values.dtotal }}</td>
+                    <td>{{ event.values.spkts }}</td>
+                    <td>{{ event.values.dpkts }}</td>
+ 
                 </tr>
-                <tr>
-                    <td>3/24/2016 0:31</td>
-                    <td>172.30.0.46</td>
-                    <td>10.0.0.183</td>
-                    <td>52234</td>
-                    <td>119</td>
-                    <td>58</td>
-                    <td>12</td>
-                    <td>213454</td>
-                    <td>100</td>
-                </tr>
-                <tr>
-                    <td>3/24/2016 0:31</td>
-                    <td>172.30.0.46</td>
-                    <td>10.0.0.183</td>
-                    <td>52234</td>
-                    <td>119</td>
-                    <td>58</td>
-                    <td>12</td>
-                    <td>213454</td>
-                    <td>100</td>
-                </tr>
-                <tr>
-                    <td>3/24/2016 0:31</td>
-                    <td>172.30.0.46</td>
-                    <td>10.0.0.183</td>
-                    <td>52234</td>
-                    <td>119</td>
-                    <td>58</td>
-                    <td>12</td>
-                    <td>213454</td>
-                    <td>100</td>
-                </tr>
+                                       <!--
+"values":{"source":"168643889","sTitle":"10.13.77.49","target":"2886991875","Title":"172.20.0.3","date":"9/14/2015 15:16","sev":"0","score":"0.000000151","sport":"46032","dport":"25","sfirst":"0","dfirst":"0","stotal":"496","dtotal":"280","spkts":"8","dpkts":"4"
+                    
+-->
             </tbody>
             </table>
-   
+        </div>
+   </div>
 
 </div>
