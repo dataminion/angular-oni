@@ -1,13 +1,21 @@
 oniApp.service('graphService', ['$rootScope', function($rootScope) {
     var graphService = function(){
         var self = this;
-        this.data = {};
+        this.data = [];
         this._color = d3.scale.category10();
         this._svg = null;
+        this._g = null;
         this._force = d3.layout.force();
+        this.min_zoom = 0.1;
+        this.max_zoom = 7;
+        this.zoom = null;
+        this._size = null;
         this._tooltip = null;
+        this._stroke = null;
+        this._base_radius= null;
         this._link = null;
         this._node = null;
+        this._shape = null;
         this.conf = false;
         this._setup = false;
         this._attr = [];
@@ -26,12 +34,22 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                     .append("div")
                     .classed('node-label', true);
                 self.conf = true;
+                self._size = d3.scale.pow().exponent(1)
+                        .domain([1,100])
+                        .range([8,24]);
+                self.zoom = d3.behavior.zoom().scaleExtent([self.min_zoom,self.max_zoom])
+                self._svg.call(self.zoom)
             },
             setup : function (data) {
                 self.data = data;
+                self._g = self._svg.append("g");
                 self._force.nodes(self.data.hosts.get())
                       .links(self.data.events.get())
                     .on("tick", function (){
+                        self._node
+                        .attr("transform", function(d) { 
+                            return "translate(" + d.x + "," + d.y + ")"; 
+                        });
                         self._link
                             .attr("x1", function(d) { return d.source.x; })
                             .attr("y1", function(d) { return d.source.y; })
@@ -42,19 +60,36 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                             .attr("cy", function(d) { return d.y; });
                         })
                       .start();
+
                 
-                self._link = self._svg.append("g").attr("class", "link").selectAll(".link")
-                    .data(data.events.get())
+                self._link = self._g.selectAll(".link").data(data.events.get())
                     .enter().append("line")
+                    .attr("class", "link")
                     .attr("id", function (d) { return [d.source.Id, d.target.Id]; })
-                    .style("stroke-width", function (d) {
-                        return self._attr.edgeStroke ;
+                    .style("stroke-width", self._attr.nominal_stroke)
+                    .style('visibility', function (d) {
+                        return d.values.visible?'visible':'hidden';
                     });
-                self._node = self._svg.append("g").attr("class", "node").selectAll(".node")
-                    .data(self.data.hosts.get())
-                    .enter().append("circle")
-                    .attr("r", 10)
+                self._node = self._g.selectAll(".node").data(self.data.hosts.get())
+                    .enter().append("g")
+                    .attr("class", "node")
                     .attr("id", function (d) { return d.Id; })
+                    .call(self._force.drag);
+                                    
+                    
+
+                self._shape = self._node.append("path")
+                    .attr("d", d3.svg.symbol()
+                          .size(function(d) { 
+                            return Math.PI*Math.pow(self._size(d.degree)||self._attr.nominal_base_node_size,2); 
+                          })
+                          .type(function(d) { 
+                            if (d[self._attr.nodeFill]==1) {
+                                return "diamond";
+                            } else if(d[self._attr.nodeFill]==0) {
+                                return "circle";
+                            } })
+                    )
                     .style("fill", function (d) {
                         if (d[self._attr.nodeFill]==1) {
                             return "#0071C5";
@@ -62,7 +97,12 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                             return "#fdb813";
                         }
                     })
-                    .call(self._force.drag)
+                    .style('visibility', function (d) {
+                        return d.visible?'visible':'hidden';
+                    })
+                	.style("stroke-width", self._attr.nominal_stroke)
+                    .style("stroke", "white")
+                  
                 self.graph.node.actions();
             },
             filter : function (data) {
@@ -70,6 +110,16 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                 self._link.selectAll(".link").remove()
                 self._node.selectAll(".node").remove()
                 self.graph.setup(data)
+            },
+            updateConf : function (attr) {
+                
+                self._attr = attr;
+                self._force.charge(self._attr.charge)
+                    .linkDistance(self._attr.linkDistance)
+                    .gravity(self._attr.gravity)
+                    .size(self._attr.size);
+                self._svg.attr("width", self._attr.svgWidth)
+                    .attr("height", self._attr.svgHeight);
             },
             node : {
                 actions : function(){
@@ -84,15 +134,14 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                    .on("contextmenu", self.contextMenu(
                         [
                             {
-                                title: 'isolate focus',
+                                title: 'Focus',
                                 action:function (elm, d, i) {
-                                    self.data.graph.set_display(d)
                                     $rootScope.df = self.data;
                                     $rootScope.$broadcast("event:d3-force-isolateNode", d);
                                 }
                             },
                             {
-                                title: 'add to ticket',
+                                title: 'Add to ticket',
                                 action:function (elm, d, i) {
                                     self.data.ticket.add_data(d)
                                     $rootScope.df = self.data;
@@ -100,6 +149,32 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                                 }
                             }
                         ]));
+                    self.zoom.on("zoom", function() {
+                        self._stroke = self._attr.nominal_stroke
+                        if(self._attr.nominal_stroke * self.zoom.scale() > self._attr.max_stroke) 
+                            {self._stroke = self._attr.max_stroke / self.zoom.scale();}
+                        self._link.style("stroke-width", self._stroke);
+                        self._shape.style("stroke-width", self._stroke);
+                        self._base_radius = self._attr.nominal_base_node_size;
+                        if (   
+                                self._attr.nominal_base_node_size * self.zoom.scale() 
+                                > 
+                                self._attr.max_base_node_size
+                        ) 
+                        {self._base_radius = self._attr.max_base_node_size / self.zoom.scale();}
+
+                        self._shape.attr("d", d3.svg.symbol()
+                            .size(function (d) {
+                                return Math.PI * Math.pow(self._size(d.degree) * self._base_radius / self._attr.nominal_base_node_size || self._base_radius, 2);
+                            })
+                            .type(function(d) { 
+                                    if (d[self._attr.nodeFill]==1) {
+                                        return "diamond";
+                                    } else if(d[self._attr.nodeFill]==0) {
+                                        return "circle";
+                                    } }))
+                        self._g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+                    });
                 }
             }
         };
