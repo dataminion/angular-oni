@@ -136,7 +136,6 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                             {
                                 title: 'Focus',
                                 action:function (elm, d, i) {
-                                    $rootScope.df = self.data;
                                     $rootScope.$broadcast("event:d3-force-isolateNode", d);
                                 }
                             },
@@ -144,7 +143,6 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                                 title: 'Add to ticket',
                                 action:function (elm, d, i) {
                                     self.data.ticket.add_data(d)
-                                    $rootScope.df = self.data;
                                     $rootScope.$broadcast("event:d3-force-addToTicket", d);
                                 }
                             }

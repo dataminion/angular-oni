@@ -6,6 +6,7 @@ oniApp.service('dataService', function($http, $q) {
         this._counter_events= [];  
         this._hosts= [];
         this.host = null;
+        this._host_list = [];
         this._display_hosts= [];
         this._counter_hosts= [];
         this._mapped_events= [];
@@ -32,30 +33,31 @@ oniApp.service('dataService', function($http, $q) {
                 })
                 return promise;
             },
-            filters : function (nodeFilter) {
+            filters : function () {
                 var deferred = $q.defer();
-                var host_list = [];
+                delete self['_host_list'];
+                self['_host_list'] = [];
                 try{
-                    host_list.push(nodeFilter.Id);
-                    self._filtered_events = self._mapped_events.map(function (n, i) {
+                    self._host_list.push(self.host.index);
+                    delete self['_filtered_events'];
+                    self['_filtered_events'] = clone(self._mapped_events);
+                    self._filtered_events = self._filtered_events.map(function (n, i) {
                         n.values.visible = false;
-                        if(nodeFilter.Id == n.source.Id) {
+                        if (self.host.index == n.source) {
                             n.values.visible = true;
-                        if (host_list.indexOf(n.target.Id) == -1) {
-                            host_list.push(n.target.Id);
+                            if (self._host_list.indexOf(n.target) == -1) {
+                                self._host_list.push(n.target);
+                            }
                         }
-                        }
-                        if(nodeFilter.Id == n.target.Id) {
+                        if (self.host.index == n.target) {
                             n.values.visible = true;
-                        if (host_list.indexOf(n.source.Id) == -1) {
-                            host_list.push(n.source.Id);
+                            if (self._host_list.indexOf(n.source) == -1) {
+                                self._host_list.push(n.source);
+                            }
                         }
-                        }
-                        
-                        
                         return n
                     });
-                    deferred.resolve({self: self, hosts : host_list}); 
+                    deferred.resolve(self); 
                 }
                 catch(e){
                     deferred.reject(e);
@@ -83,13 +85,14 @@ oniApp.service('dataService', function($http, $q) {
                 });
                 return promise;
             },
-            filters : function (events) {
+            filters : function () {
                 var deferred = $q.defer();
                 try{
-                    self._filtered_hosts = self._display_hosts.map(function (n, i) {
+                    delete self['_filtered_hosts'];
+                    self['_filtered_hosts'] = clone(self._mapped_hosts);
+                    self._filtered_hosts = self._filtered_hosts.map(function (n, i) {
                         n.visible = false;
-                        if(events.indexOf(n.Id) >=0) {
-                            
+                        if(self._host_list.indexOf(i) >=0) {
                             n.visible = true;}
                         return n
                     });
@@ -105,10 +108,12 @@ oniApp.service('dataService', function($http, $q) {
             set : function () {
                 var deferred = $q.defer();
                 try{
-                    self._mapped_events = self._events.map(function (d) {                  
+                      self._mapped_events =  clone(self._events);
+                      self._mapped_hosts  =  clone(self._hosts);
+                        self._mapped_events = self._mapped_events.map(function (d) {                  
                         var s = -1, 
                             t = -1;
-                        self._mapped_hosts = self._hosts.map(function (n, i) {
+                        self._mapped_hosts = self._mapped_hosts.map(function (n, i) {
                             if(parseInt(n.Id) == parseInt(d.source)) {n.degree ++; s = i;}
                             if(parseInt(n.Id) == parseInt(d.target)) {n.degree ++; t = i;}
                             n['visible'] = true;
@@ -130,22 +135,29 @@ oniApp.service('dataService', function($http, $q) {
             },
             
             set_display : function (nodeFilter = null) {
-            var deferred = $q.defer();
+                var deferred = $q.defer();
                 try{
-                if(nodeFilter == null){
-                    self.host = null;
-                    self._display_hosts = self._mapped_hosts
-                    self._display_events = self._mapped_events
-                } else {
-                    self.host = nodeFilter; 
-                    self.events.filters(nodeFilter)
-                    .then(function(a){return a.self.hosts.filters(a.hosts)})
-                    .finally(function(b){
-                            self._display_events = b._filtered_events;
-                            self._display_hosts = b._filtered_hosts;
-                        })
-                }
-                deferred.resolve(self);
+                    if(!nodeFilter){
+                        self.host = null;
+                        delete self['_display_hosts'];
+                        delete self['_display_events'];
+                        self['_display_hosts'] = clone(self._mapped_hosts);
+                        self['_display_events'] = clone(self._mapped_events);
+                        deferred.resolve(self);
+                    } else {
+                        self.host = nodeFilter; 
+                        self.events.filters()
+                        .then(function(a){return a.hosts.filters()})
+                        .then(function(b){
+                            delete self['_display_hosts'];
+                            delete self['_display_events'];
+                            self['_display_events'] = clone(b._filtered_events);
+                            self['_display_hosts'] = clone(b._filtered_hosts);
+                            }).finally(function(b){return b})
+                        
+                        deferred.resolve(self)
+                    }
+                
                     }
                 catch(e){
                     deferred.reject(e);
