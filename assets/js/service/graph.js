@@ -62,7 +62,7 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                       .start();
 
                 
-                self._link = self._g.selectAll(".link").data(data.events.get())
+                self._link = self._g.selectAll(".link").data(self.data.events.get())
                     .enter().append("line")
                     .attr("class", "link")
                     .attr("id", function (d) { return [d.source.Id, d.target.Id]; })
@@ -84,18 +84,11 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                             return Math.PI*Math.pow(self._size(d.degree)||self._attr.nominal_base_node_size,2); 
                           })
                           .type(function(d) { 
-                            if (d[self._attr.nodeFill]==1) {
-                                return "diamond";
-                            } else if(d[self._attr.nodeFill]==0) {
-                                return "circle";
-                            } })
+                                return d[self._attr.nodeFill]==1?"diamond":"circle";
+                             })
                     )
                     .style("fill", function (d) {
-                        if (d[self._attr.nodeFill]==1) {
-                            return "#0071C5";
-                        } else if(d[self._attr.nodeFill]==0) {
-                            return "#fdb813";
-                        }
+                        return d[self._attr.nodeFill]==1?"#0071C5":"#fdb813";
                     })
                     .style('visibility', function (d) {
                         return d.visible?'visible':'hidden';
@@ -106,10 +99,10 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                 self.graph.node.actions();
             },
             filter : function (data) {
-                self._svg.selectAll('svg > *').remove()
-                self._link.selectAll(".link").remove()
-                self._node.selectAll(".node").remove()
-                self.graph.setup(data)
+                self._svg.selectAll('svg > *').remove();
+                self._link.selectAll(".link").remove();
+                self._node.selectAll(".node").remove();
+                self.graph.setup(data);
             },
             updateConf : function (attr) {
                 

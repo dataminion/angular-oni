@@ -23,7 +23,7 @@
                 </tr>
                 </thead>
                 <tbody ng-style="'max-height: 200px; overflow-y:scroll'">
-                <tr ng-repeat="event in df.events.get()">
+                <tr ng-repeat="event in df.events.get()" ng-if="event.values.visible">
 
                     <td>{{ event.values.date }}</td>
                     <td>{{ event.values.sTitle }}</td>
