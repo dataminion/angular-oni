@@ -83,9 +83,7 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                           .size(function(d) { 
                             return Math.PI*Math.pow(self._size(d.degree)||self._attr.nominal_base_node_size,2); 
                           })
-                          .type(function(d) { 
-                                return d[self._attr.nodeFill]==1?"diamond":"circle";
-                             })
+                          .type(function(d) {return d[self._attr.nodeFill]==1?"diamond":"circle";})
                     )
                     .style("fill", function (d) {
                         return d[self._attr.nodeFill]==1?"#0071C5":"#fdb813";
@@ -157,12 +155,8 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                             .size(function (d) {
                                 return Math.PI * Math.pow(self._size(d.degree) * self._base_radius / self._attr.nominal_base_node_size || self._base_radius, 2);
                             })
-                            .type(function(d) { 
-                                    if (d[self._attr.nodeFill]==1) {
-                                        return "diamond";
-                                    } else if(d[self._attr.nodeFill]==0) {
-                                        return "circle";
-                                    } }))
+                           .type(function(d) {return d[self._attr.nodeFill]==1?"diamond":"circle";}))
+                        
                         self._g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
                     });
                 }
