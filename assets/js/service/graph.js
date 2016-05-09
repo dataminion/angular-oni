@@ -6,8 +6,8 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
         this._svg = null;
         this._g = null;
         this._force = d3.layout.force();
-        this.min_zoom = 0.1;
-        this.max_zoom = 7;
+        this.min_zoom = .5;
+        this.max_zoom = 6;
         this.zoom = null;
         this._size = null;
         this._tooltip = null;
@@ -105,7 +105,6 @@ oniApp.service('graphService', ['$rootScope', function($rootScope) {
                 self.graph.setup(data);
             },
             updateConf : function (attr) {
-                
                 self._attr = attr;
                 self._force.charge(self._attr.charge)
                     .linkDistance(self._attr.linkDistance)
